@@ -1,85 +1,55 @@
-const { listContacts, getContactById, addContact, removeContact, updateContact } = require('../models/contacts.js');
-const { createContactValidationSchema, updateContactValidationSchema } = require('../utils/validation/contactValidationSchemas');
-const { HttpError } = require('../utils/helpers/httpErrors.js');
+const { Contact } = require("../models/contacts");
+const HttpError = require("../utils/helpers/HttpErrors");
+const controllerWrapper = require("../utils/decorators/controllerWrapper");
 
-const getAllContacts = async (req, res, next) => {
-    try {
-        const contacts = await listContacts();
+
+
+
+const getAllContacts = async (req, res) => {
+        const contacts = await Contact.find();
         res.status(200).json(contacts)
-    }
-    catch(error) {
-        next(error)
-    }
 };
 
-const getOneContact = async (req, res, next) => {
-    try{
+const getOneContact = async (req, res) => {
         const { contactId } = req.params;  
-        const contact = await getContactById(contactId);
+        const contact = await Contact.findById(contactId);
         if (!contact) {
-            throw HttpError(404, 'Not found');
+            throw new HttpError(404, 'Not found');
         }
         res.status(200).json(contact);
-    }
-    catch(error) {
-       next(error)
-    }
-
 };
 
-const createContact = async (req, res, next) => {
-    try {
-        const { error } = createContactValidationSchema.validate(req.body);
-        if (error) {
-           throw HttpError(400, error.message);
-        }
-        const newContact = await addContact(req.body);
+const createContact = async (req, res) => {
+        const newContact = await Contact.create(req.body);
         res.status(201).json(newContact);
-    }
-    catch(error) {
-       next(error)
-    }
 };
 
-const upContact = async (req, res, next) => {
-    try{
-        const { error } = updateContactValidationSchema.validate(req.body);
-        if (error) {
-            throw HttpError(400, error.message);
-        } 
+const upContact = async (req, res) => {
         const { contactId } = req.params;
-        const updateCont = await updateContact(contactId, req.body);
+        const updateCont = await Contact.findByIdAndUpdate(contactId, req.body, {new: true, runValidators: true});;
         if (!updateCont) {
-                throw HttpError(404, `Not found`);
+                throw HttpError(404, `No found`);
             }
         res.status(200).json(updateCont);
-    }
-    catch(error) {
-       next(error)
-    }
 };
 
-const deleteContact = async (req, res,next) => {
-    try {
+const deleteContact = async (req, res) => { 
         const { contactId } = req.params;  
-        const contact = await removeContact(contactId);
+        const contact = await Contact.findByIdAndDelete(contactId);
         if (!contact) {
-            throw HttpError(404, `Not found`);
+            throw HttpError(404, `No found`);
         }
         
         res.json({ 
-            message: "Contact deleted"
+            message: "contact deleted"
         });
-    }
-    catch(error) {
-        next(error)
-    }
 };
 
+
 module.exports = {
-  getAllContacts,
-  getOneContact,
-  createContact,
-  upContact,
-  deleteContact,
+    getAllContacts: controllerWrapper(getAllContacts),
+    getOneContact: controllerWrapper(getOneContact),
+    createContact: controllerWrapper(createContact),
+    upContact: controllerWrapper(upContact),
+    deleteContact: controllerWrapper(deleteContact)
 };
