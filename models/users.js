@@ -30,6 +30,6 @@ userSchema.post('save', handleMongooseError );
 userSchema.pre("findOneAndUpdate", preUpdate);
 userSchema.post('findOneAndUpdate', handleMongooseError );
 
-const User = model('users', userSchema);
+const User = model('user', userSchema);
 
 module.exports = User
