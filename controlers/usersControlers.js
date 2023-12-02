@@ -54,7 +54,27 @@ const signin = async(req,res)=>{
     });
 }
 
+const getCurrent = async(req, res)=>{
+    const { email, subscription } = req.user;
+  res.status(200).json({
+    email,
+    subscription,
+  });
+}
+
+const logout = async (req, res) => {
+    const { _id } = req.user;
+      const result = await User.findByIdAndUpdate(_id, { token: '' });
+  
+    if (!result) {
+      throw HttpError(404, 'Not found');
+    }
+    res.status(204).json({});
+  };
+
 module.exports = {
     signup: controllerWrapper(signup),
     signin: controllerWrapper(signin),
+    getCurrent: controllerWrapper(getCurrent),
+    logout: controllerWrapper(logout)
 }
