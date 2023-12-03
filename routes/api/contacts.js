@@ -9,19 +9,22 @@ const {
 const { schemas } = require('../../models/contacts');
 const validateBody = require('../../utils/decorators/validateBody');
 const { isValidId } = require('../../utils/middlewares/isVallidId');
+const authenticate = require('../../utils/middlewares/authenticate')
 
-const router = express.Router()
+const contactsRouter = express.Router()
 
-router.get('/', getAllContacts)
+contactsRouter.use(authenticate)
 
-router.get('/:contactId', isValidId, getOneContact)
+contactsRouter.get('/', getAllContacts)
 
-router.post('/', validateBody(schemas.createContactValidationSchema), createContact)
+contactsRouter.get('/:contactId', isValidId, getOneContact)
 
-router.delete('/:contactId', isValidId, deleteContact)
+contactsRouter.post('/', validateBody(schemas.createContactValidationSchema), createContact)
 
-router.put('/:contactId', isValidId, validateBody(schemas.updateContactValidationSchema), upContact)
+contactsRouter.delete('/:contactId', isValidId, deleteContact)
 
-router.patch('/:contactId/favorite', isValidId, validateBody(schemas.contactFavoriteSchema), upContact);
+contactsRouter.put('/:contactId', isValidId, validateBody(schemas.updateContactValidationSchema), upContact)
 
-module.exports = router
+contactsRouter.patch('/:contactId/favorite', isValidId, validateBody(schemas.contactFavoriteSchema), upContact);
+
+module.exports = contactsRouter
