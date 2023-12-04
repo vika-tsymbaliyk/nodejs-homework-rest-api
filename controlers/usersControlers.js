@@ -1,3 +1,5 @@
+const fs = require('fs/promises');
+const path = require("path");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const gravatar = require('gravatar');
@@ -6,6 +8,8 @@ const controllerWrapper = require("../utils/decorators/controllerWrapper");
 const { HttpError } = require('../utils/helpers/HttpErrors');
 
 const {JWT_SECRET} = process.env;
+
+const avatarPath = path.join(__dirname, "../public/avatars");
 
 const signup = async(req, res)=>{
     const { email, password} = req.body;
@@ -72,13 +76,21 @@ const logout = async (req, res) => {
       const result = await User.findByIdAndUpdate(_id, { token: '' });
   
     if (!result) {
-      throw HttpError(404, 'Not found');
+      throw new HttpError(404, 'Not found');
     }
     res.status(204).json({});
   };
 
   const updateAvatar = async(req,res)=>{
-    
+    const {_id: owner} = req.user;
+    const {path: oldPath, filename} = req.file;
+    const newPath = path.join(avatarPath, filename);
+    await fs.rename(oldPath, newPath);
+
+    const avatar = path.join("avatars", filename);
+    const result = await User.findByIdAndUpdate(owner, {avatar});
+
+    res.status(201).json(result);
 
   }
 
@@ -87,5 +99,5 @@ module.exports = {
     signin: controllerWrapper(signin),
     getCurrent: controllerWrapper(getCurrent),
     logout: controllerWrapper(logout),
-    updateAvatar
+    updateAvatar: controllerWrapper(updateAvatar)
 }
