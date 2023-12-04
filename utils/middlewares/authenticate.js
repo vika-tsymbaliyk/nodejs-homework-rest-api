@@ -1,10 +1,9 @@
 const jwt = require('jsonwebtoken');
-const { HttpError } = require('../helpers/httpErrors');
 const controllerWrapper = require('../decorators/controllerWrapper');
-const User = require('../../models/users')
+const User = require('../../models/users');
+const { HttpError } = require('../helpers/HttpErrors');
 
 const {JWT_SECRET} = process.env;
-
 
 const authenticate = async(req, res, next) => {
     const { authorization } = req.headers;
