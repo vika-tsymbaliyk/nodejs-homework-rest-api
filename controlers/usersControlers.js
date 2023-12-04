@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const gravatar = require('gravatar');
 const User = require('../models/users');
 const controllerWrapper = require("../utils/decorators/controllerWrapper");
 const { HttpError } = require('../utils/helpers/HttpErrors');
@@ -14,12 +15,15 @@ const signup = async(req, res)=>{
         throw new HttpError(409, 'Email in use');
     }
 
+    const gravatarAvatarUrl = gravatar.url(email, { s: '200', d: 'identicon', r: 'pg' }, true);
+
     const hashPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({...req.body, password: hashPassword})
+    const newUser = await User.create({...req.body, password: hashPassword, avatarURL: gravatarAvatarUrl})
     res.status(201).json({
         user: {
             email: newUser.email,
             subscription: newUser.subscription,
+            avatarURL: newUser.avatarURL
         }
     })
 }
@@ -50,6 +54,7 @@ const signin = async(req,res)=>{
         user: {
         email: user.email,
         subscription: user.subscription,
+        avatarURL: user.avatarURL
         },
     });
 }
@@ -72,9 +77,15 @@ const logout = async (req, res) => {
     res.status(204).json({});
   };
 
+  const updateAvatar = async(req,res)=>{
+    
+
+  }
+
 module.exports = {
     signup: controllerWrapper(signup),
     signin: controllerWrapper(signin),
     getCurrent: controllerWrapper(getCurrent),
-    logout: controllerWrapper(logout)
+    logout: controllerWrapper(logout),
+    updateAvatar
 }
